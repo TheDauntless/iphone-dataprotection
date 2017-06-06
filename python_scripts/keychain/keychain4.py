@@ -102,12 +102,20 @@ class Keychain4(Keychain):
             return BPlistReader(binaryplist).parse()
         elif version == 3:
             der = gcm_decrypt(unwrappedkey, "", encrypted_data, "", blob[-16:])
-            stuff = der_decode(der)[0]
+            stuff, tail = der_decode(der)
             rval = {}
-            for k,v in stuff:
-              k = str(k)
-              # NB - this is binary and may not be valid UTF8 data
-              v = str(v)
-              rval[k] = v
+
+            try:
+                index = 0
+                while True:
+                    k = stuff.getComponentByPosition(index).getComponentByPosition(0)
+                    v = stuff.getComponentByPosition(index).getComponentByPosition(1)
+                    rval[str(k)] = str(v)
+                    index += 1
+            except:
+                pass
+
             return rval
+
+
 
